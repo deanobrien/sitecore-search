@@ -1,0 +1,281 @@
+﻿<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+	<style>
+	.img-container {
+		width:100%;
+		height:150px;
+		background-size: cover;
+	}
+	.searchResult
+	{
+		//min-height:420px;
+		display:block;
+		overflow:hidden;
+	}
+	body{background:#fff}
+	</style>
+</head>
+<body class="sc">
+
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header" style="background-color: @(string.IsNullOrWhiteSpace(@Model.ItemId) ? "gold" : "deepskyblue");">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+
+                    <a class="navbar-brand" href="#" style="color:black;font-weight:bold;margin:0 20px;">Search Demo</a>
+
+
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+
+                <form class="navbar-form navbar-left" role="search">
+                    <div class="form-group">
+                        <input type="text" id="searchTerm" name="searchTerm" class="form-control" placeholder="Search">
+
+                    </div>
+                    <button type="submit" class="btn btn-default" onclick="return false;">Submit</button>
+                </form>
+            </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+    </nav>
+
+
+        <div class="row">
+		    <div class="col-md-3" class="bg-secondary">
+                <div id="facets" class="row">
+
+				</div>
+            </div>
+            <div class="col-md-9">
+                <div id="searchResults" class="row"></div>
+            </div>
+        </div>
+
+	<script src="js/mustache.js" charset="utf-8" type="text/javascript"></script>
+	<script id="searchResultTpl" type="text/template">
+        <div class='col-md-12'>
+            <div class='thumbnail searchResult'>
+                <div class='row'>
+                    <div class='col-md-3'>
+                        <div class="img-container" style="background-image: url({{image_url}})">
+                        </div>
+                    </div>
+                    <div class='col-md-9'>
+                        <p><b><a href="?id={{url}}">{{name}}</a></b></p>
+                        <p>{{description}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+	<script id="facetTpl" type="text/template">
+		<div>
+			<label><input type="checkbox" value={{id}} class="facetType" checked> {{text}} ({{count}})</label>
+		</div>
+    </script>
+    <script type="text/javascript">
+		var facetTypes = [];
+		var selectedFacets = [];
+		var availableTags = [];
+	    var searchRequest = {
+            "context": {
+				"locale": {
+					"country": "us",
+					"language": "en"
+				},
+                "page": {
+                    "uri": "/search"
+                }
+            },
+            "widget": {
+                "items": [
+                    {
+                        "entity": "content",
+                        "rfk_id": "rfkid_7",
+                        "search": {
+                            "content": {},
+							"facet": {
+								"all": true,
+								"max": 50
+							}
+                        }
+                    }
+                ]
+            }
+        };
+		var previewRequest = {
+			"context": {
+				"user": {
+					"UUID": "159828561-m7-17-44-1p-c0ya4nb69t8o0iho2eia-1667926756187"
+				},
+				"locale": {
+					"country": "us",
+					"language": "en"
+				}
+			},
+			"widget": {
+				"items": [
+					{
+						"entity": "content",
+						"rfk_id": "rfkid_6",
+						"search": {
+							"content": {},
+							"query": {
+								"keyphrase": "team"
+							},
+							"suggestion": [
+								{
+									"name": "keyword_suggester"
+								}
+							]
+						}
+					}
+				]
+			}
+		};
+		$(document).on('change', '[type=checkbox]', function() {
+			search();
+		});
+		$( "#searchTerm" ).autocomplete({
+		  source: availableTags
+		});
+		$("button[type=submit]").click(search);
+		$("#searchTerm").on( "keyup", function() {
+		  preview( $(this).val());
+		} );
+		function preview(term) {
+			var pRequest = previewRequest;
+			pRequest.widget.items[0].search.query.keyphrase = term;
+			//console.log(JSON.stringify(pRequest));
+			jQuery.ajax({
+                url: "https://discover-euc1.sitecorecloud.io/discover/v2/<enter-your-domain-id-here>",
+                method: "POST",
+                headers: {
+                    "Authorization": "<enter-your-api-key-here>"
+					// Need to switch to use bearer/accesstoken see: https://doc.sitecore.com/search/en/developers/search-developer-guide/api-authentication-and-authorization.html
+					// "accessToken": "xxx"
+                },
+                dataType: "json",
+                data: JSON.stringify(pRequest)
+            }).done(function (data) {
+				//console.log("response");
+				 availableTags =[];
+				 $.each(data.widgets[0].suggestion.keyword_suggester, function( key, value ) {
+					availableTags.push(value.text);
+					$( "#searchTerm" ).autocomplete({
+						source: availableTags
+					});
+				 });
+				
+            });
+		}
+		
+        function search() {
+			var sRequest = searchRequest;	
+			selectedFacets = [];
+			sRequest.widget.items[0].search = {
+				"content": {},
+				"facet": {
+					"all": true,
+					"max": 99,
+					"types": []
+				},
+				"query": {
+					"keyphrase": "tbc"
+				}
+				// CURRENTLY RETURNING "validation_error_1": "sorting option 'asc_name_asc' not configured"
+				// CHECKED CEC AND "asc_name" SORT is configured
+				// THIS SHOULD HOPEFULLY WORK AFTER CONTENT REINDEXED
+				// AIM IS TO INTRODUCE SORT OBJECT INTO API CALL - ONCE SUCCESS CAN ADD DYNAMICALLY ON BUTTON CLICK
+				//,
+				//"sort": {
+                //    "choices": true,
+                //    "value": [
+                //        {
+                //            "order": "asc",
+                //            "name": "asc_name"
+                //        }
+                //    ]
+                //}
+			};
+			if($('input:checkbox:checked').length>0)
+			{
+				$.each(facetTypes, function( key, value ) {
+					var newType={
+						"name": value,
+						"filter": {
+							"values": [],
+							"type": "or"
+						}
+					};
+					$('input.'+value+':checkbox:checked').each(function( index ) {
+						newType.filter.values.push($(this).val());
+						selectedFacets.push($(this).val());
+					});
+					searchRequest.widget.items[0].search.facet.types.push(newType);
+				});
+			}
+			else
+			{
+				delete sRequest.widget.items[0].search.facet.types;
+			}
+		
+            var keyphrase = $("#searchTerm")[0].value; 
+			if(keyphrase)
+			{
+				sRequest.widget.items[0].search.query = {
+					"keyphrase": keyphrase
+				};
+			}
+			else
+			{
+				delete sRequest.widget.items[0].search.query;
+			}
+            jQuery.ajax({
+                url: "https://discover-euc1.sitecorecloud.io/discover/v2/<enter-your-domain-id-here>",
+                method: "POST",
+                headers: {
+                    "Authorization": "<enter-your-api-key-here>"
+					// Need to switch to use bearer/accesstoken see: https://doc.sitecore.com/search/en/developers/search-developer-guide/api-authentication-and-authorization.html
+					//"accessToken": "xxx"
+                },
+                dataType: "json",
+                data: JSON.stringify(sRequest)
+            }).done(function (data) {
+				$("#searchResults").empty();
+				$.each(data.widgets[0].content, function (index, elem) {
+					var template = $('#searchResultTpl').html();
+					var html = Mustache.to_html(template, elem);
+					$("#searchResults").append(html);
+				});
+				$("#facets").empty();
+				$.each(data.widgets[0].facet, function (index, elem) {
+					facetTypes.push(elem.name);
+					$("#facets").append("<div id='"+elem.name+"'></div>");
+					$.each(elem.value, function (index, value) {
+						var template = $('#facetTpl').html().replace("facetType",elem.name);
+						if(selectedFacets.indexOf(value.id) == -1)
+						{
+							template =template.replace("checked", "")
+						}
+						var html = Mustache.to_html(template, value);
+						$("#"+elem.name).append(html);
+					});				
+				});
+            });
+        }
+		search();
+    </script>
+
+</body>
+</html>
