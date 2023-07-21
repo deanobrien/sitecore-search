@@ -3,6 +3,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 	<style>
 	.img-container {
@@ -16,11 +17,12 @@
 		display:block;
 		overflow:hidden;
 	}
+	.row{margin-left:auto;}
 	body{background:#fff}
 	</style>
 </head>
 <body class="sc">
-
+<div class="container">
     <nav class="navbar navbar-default">
         <div class="container-fluid">
             <div class="navbar-header" style="background-color: @(string.IsNullOrWhiteSpace(@Model.ItemId) ? "gold" : "deepskyblue");">
@@ -30,11 +32,17 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-
-
                     <a class="navbar-brand" href="#" style="color:black;font-weight:bold;margin:0 20px;">Search Demo</a>
+					<ul class="nav navbar-nav">
 
-
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sort by <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="#" id="sort-asc">Name Asc</a></li>
+								<li><a href="#" id="sort-desc">Name Desc</a></li>
+							</ul>
+						</li>
+					</ul>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
 
@@ -60,7 +68,7 @@
                 <div id="searchResults" class="row"></div>
             </div>
         </div>
-
+</div>
 	<script src="js/mustache.js" charset="utf-8" type="text/javascript"></script>
 	<script id="searchResultTpl" type="text/template">
         <div class='col-md-12'>
@@ -149,9 +157,18 @@
 		$( "#searchTerm" ).autocomplete({
 		  source: availableTags
 		});
-		$("button[type=submit]").click(search);
+		//$("button[type=submit]").click(search(''));
+		$("button[type=submit]").on( "click", function() {
+		  search( '' );
+		} );
 		$("#searchTerm").on( "keyup", function() {
 		  preview( $(this).val());
+		} );
+		$("#sort-asc").on( "click", function() {
+		  search( 'asc_name' );
+		} );
+		$("#sort-desc").on( "click", function() {
+		  search( 'desc_name' );
 		} );
 		function preview(term) {
 			var pRequest = previewRequest;
@@ -180,8 +197,8 @@
             });
 		}
 		
-        function search() {
-			var sRequest = searchRequest;	
+        function search(sort) {
+			var sRequest = searchRequest;
 			selectedFacets = [];
 			sRequest.widget.items[0].search = {
 				"content": {},
@@ -193,21 +210,18 @@
 				"query": {
 					"keyphrase": "tbc"
 				}
-				// CURRENTLY RETURNING "validation_error_1": "sorting option 'asc_name_asc' not configured"
-				// CHECKED CEC AND "asc_name" SORT is configured
-				// THIS SHOULD HOPEFULLY WORK AFTER CONTENT REINDEXED
-				// AIM IS TO INTRODUCE SORT OBJECT INTO API CALL - ONCE SUCCESS CAN ADD DYNAMICALLY ON BUTTON CLICK
-				//,
-				//"sort": {
-                //    "choices": true,
-                //    "value": [
-                //        {
-                //            "order": "asc",
-                //            "name": "asc_name"
-                //        }
-                //    ]
-                //}
 			};
+			if(sort) 
+			{
+				sRequest.widget.items[0].search.sort = {
+                    "choices": true,
+                    "value": [
+                        {
+                            "name": sort
+                        }
+                    ]
+                };
+			}
 			if($('input:checkbox:checked').length>0)
 			{
 				$.each(facetTypes, function( key, value ) {
@@ -241,6 +255,7 @@
 			{
 				delete sRequest.widget.items[0].search.query;
 			}
+			//console.log(JSON.stringify(sRequest));
             jQuery.ajax({
                 url: "https://discover-euc1.sitecorecloud.io/discover/v2/<enter-your-domain-id-here>",
                 method: "POST",
@@ -252,6 +267,7 @@
                 dataType: "json",
                 data: JSON.stringify(sRequest)
             }).done(function (data) {
+			    //console.log(JSON.stringify(data));
 				$("#searchResults").empty();
 				$.each(data.widgets[0].content, function (index, elem) {
 					var template = $('#searchResultTpl').html();
