@@ -1,76 +1,82 @@
 ﻿<html>
 <head>
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-	<style>
-	.img-container {
-		width:100%;
-		height:150px;
-		background-size: cover;
-	}
-	.searchResult
-	{
-		//min-height:420px;
-		display:block;
-		overflow:hidden;
-	}
-	.row{margin-left:auto;}
-	body{background:#fff}
-	</style>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <style>
+        .img-container {
+            width: 100%;
+            height: 150px;
+            background-size: cover;
+        }
+
+        .searchResult {
+            //min-height:420px;
+            display: block;
+            overflow: hidden;
+        }
+
+        .row {
+            margin-left: auto;
+        }
+
+        body {
+            background: #fff
+        }
+    </style>
 </head>
 <body class="sc">
-<div class="container">
-    <nav class="navbar navbar-default">
-        <div class="container-fluid">
-            <div class="navbar-header" style="background-color: @(string.IsNullOrWhiteSpace(@Model.ItemId) ? "gold" : "deepskyblue");">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
+    <div class="container">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header" style="background-color: @(string.IsNullOrWhiteSpace(@Model.ItemId) ? " gold" : "deepskyblue" );">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
                     <a class="navbar-brand" href="#" style="color:black;font-weight:bold;margin:0 20px;">Search Demo</a>
-					<ul class="nav navbar-nav">
+                    <ul class="nav navbar-nav">
 
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sort by <span class="caret"></span></a>
-							<ul class="dropdown-menu">
-								<li><a href="#" id="sort-asc">Name Asc</a></li>
-								<li><a href="#" id="sort-desc">Name Desc</a></li>
-							</ul>
-						</li>
-					</ul>
-            </div>
-            <div id="navbar" class="navbar-collapse collapse">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sort by <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#" id="sort-asc">Name Asc</a></li>
+                                <li><a href="#" id="sort-desc">Name Desc</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
 
-                <form class="navbar-form navbar-left" role="search">
-                    <div class="form-group">
-                        <input type="text" id="searchTerm" name="searchTerm" class="form-control" placeholder="Search">
+                    <form class="navbar-form navbar-left" role="search">
+                        <div class="form-group">
+                            <input type="text" id="searchTerm" name="searchTerm" class="form-control" placeholder="Search">
 
-                    </div>
-                    <button type="submit" class="btn btn-default" onclick="return false;">Submit</button>
-                </form>
-            </div><!--/.nav-collapse -->
-        </div><!--/.container-fluid -->
-    </nav>
+                        </div>
+                        <button type="submit" class="btn btn-default" onclick="return false;">Submit</button>
+                    </form>
+                </div><!--/.nav-collapse -->
+            </div><!--/.container-fluid -->
+        </nav>
 
 
         <div class="row">
-		    <div class="col-md-3" class="bg-secondary">
+            <div class="col-md-3" class="bg-secondary">
                 <div id="facets" class="row">
 
-				</div>
+                </div>
             </div>
             <div class="col-md-9">
                 <div id="searchResults" class="row"></div>
             </div>
         </div>
-</div>
-	<script src="js/mustache.js" charset="utf-8" type="text/javascript"></script>
-	<script id="searchResultTpl" type="text/template">
+    </div>
+    <script src="js/mustache.js" charset="utf-8" type="text/javascript"></script>
+    <script id="searchResultTpl" type="text/template">
         <div class='col-md-12'>
             <div class='thumbnail searchResult'>
                 <div class='row'>
@@ -86,10 +92,10 @@
             </div>
         </div>
     </script>
-	<script id="facetTpl" type="text/template">
-		<div>
-			<label><input type="checkbox" value={{id}} class="facetType" checked> {{text}} ({{count}})</label>
-		</div>
+    <script id="facetTpl" type="text/template">
+        <div>
+            <label><input type="checkbox" value={{id}} class="facetType" checked> {{text}} ({{count}})</label>
+        </div>
     </script>
     <script type="text/javascript">
         var facetTypes = [];
